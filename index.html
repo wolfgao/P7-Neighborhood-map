@@ -9,7 +9,7 @@
         margin: 0;
         padding: 0;
       }
-      .container {
+      .searchbox-searchbutton-container {
         height: 100%;
         position: relative;
       }
@@ -61,21 +61,19 @@
     </style>
     <script src="js/libs/knockout-3.4.2.js"></script>
     <script src="js/libs/jquery.min.js"></script>
+    <script src="js/libs/utils.js"></script>
   </head>
   <body>
     <div class="search-box">
         <h1>Find Your Neighborhood In NYC</h1>
           <div id="omnibox-singlebox">
             <div class="omnibox-singlebox-root omnibox-active">
-              <div id="searchbox" role="search" class="searchbox searchbox-shadow noprint clear-button-shown "> 
+              <div id="searchbox" role="search" class="searchbox"> 
                 <form id="searchbox_form" onsubmit="return false;" class="initial-searchbox-wrapper"> 
-                  <div id="gs_lc50" style="position: relative;">
-                    <input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" jsaction="keyup:omnibox.keyUp;input:omnibox.inputDetected" class="tactile-searchbox-input searchboxinput" spellcheck="false">
-                  </div>
+                    <input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" onkeyup="omnibox.keyUp()" class="searchboxinput" spellcheck="false">
                 </form> 
                 <div class="searchbox-searchbutton-container"> 
-                  <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbox-searchbutton" jsaction="omnibox.search;mouseover:omnibox.showTooltip;mouseout:omnibox.hideTooltip;focus:omnibox.showTooltip;blur:omnibox.hideTooltip" class="searchbox-searchbutton"></button>
-                  <span aria-hidden="true" class="omnibox-tooltip kd-tooltip-dark">搜索</span> 
+                  <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbox-searchbutton" onclick="omnibox.search()" class="searchbox-searchbutton"></button>
                 </div>
               </div> 
               <a class="gsst_a" href="javascript:void(0)" role="button" tooltip="清除搜索" aria-label="清除搜索" guidedhelpid="clear_search">
