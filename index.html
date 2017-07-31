@@ -9,26 +9,6 @@
         margin: 0;
         padding: 0;
       }
-      .searchbox-searchbutton-container {
-        height: 100%;
-        position: relative;
-      }
-
-      input {
-        font-size: 12px;
-      }
-
-      h1 {
-        color: #FFFFFF;
-        font-size: 22px;
-        margin: 0 0 10px 0;
-        text-align: center;
-      }
-
-      .addressList{
-        color: #FFFFFF;
-        font-size: 16px;
-      }
       .search-box {
         background: #000000;
         border: 1px solid #999;
@@ -37,17 +17,23 @@
         line-height: 35px;
         padding: 10px 10px 30px 10px;
         text-align: left;
-        width: 340px;
+        width: 38%;
       }
-      #searchbox {
+      h1 {
+        color: #FFFFFF;
+        font-size: 20px;
+        margin: 0 0 10px 0;
+        text-align: left;
+      }
+
+      .addressList, .searchbox .searchbutton{
+        color: #FFFFFF;
+        font-size: 14px;
+        text-align: left;
+      }
+      #searchboxinput {
         color: #000000;
         font-size: 14px;
-      }
-      hr {
-        background: #D0D7D9;
-        height: 1px;
-        margin: 20px 0 20px 0;
-        border: none;
       }
 
       #map {
@@ -66,31 +52,28 @@
   <body>
     <div class="search-box">
         <h1>Find Your Neighborhood In NYC</h1>
-          <div id="omnibox-singlebox">
-            <div class="omnibox-singlebox-root omnibox-active">
-              <div id="searchbox" role="search" class="searchbox"> 
-                <form id="searchbox_form" onsubmit="return false;" class="initial-searchbox-wrapper"> 
-                    <input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" onkeyup="omnibox.keyUp()" class="searchboxinput" spellcheck="false">
-                </form> 
-                <div class="searchbox-searchbutton-container"> 
-                  <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbox-searchbutton" onclick="omnibox.search()" class="searchbox-searchbutton"></button>
-                </div>
-              </div> 
-              <a class="gsst_a" href="javascript:void(0)" role="button" tooltip="清除搜索" aria-label="清除搜索" guidedhelpid="clear_search">
-                <span class="sbcb_a" id="sb_cb50" aria-label="清除搜索"></span>
-              </a>
-            </div> 
-        </div>
-        <div data-bind="foreach: addressList" class="addressList">
+        <div id="searchbox" role="search" class="searchbox"> 
+          <form id="searchbox_form" onsubmit="return false;"> 
+              <input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" onkeyup="omnibox.keyUp()" class="searchboxinput" spellcheck="false">
+          </form> 
+          <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="omnibox.search()" class="searchbutton">
+          </button>
+          <a class="gsst_a" href="javascript:void(0)" role="button" tooltip="清除搜索" aria-label="清除搜索" guidedhelpid="clear_search">
+            <span class="sbcb_a" id="sb_cb50" aria-label="清除搜索"></span>
+          </a>
+        </div> 
+        <div id="addressList" data-bind="foreach: addressList" class="addressList">
           <li>
-            <span id="spot_list" data-bind="text: title"></span>
+            <span id="spot_list" data-bind="text: title, click:$parent.clickTitle(title)"></span>
           </li>
         </div>
+      <div id="search-results" class="search-results">
+      </div>
     </div>
     <div id="map"></div>
     <script src="js/main.js"></script>
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCqYws-DUG9U254coGf2QHlzqcIj2tlRKA&v=3&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCqYws-DUG9U254coGf2QHlzqcIj2tlRKA&v=3&callback=initMap">
     </script>
     
   </body>
