@@ -2,7 +2,7 @@
 //Global variables.
 var map;
 // Create a new blank array for all the listing markers.
-var markers = [];
+var markers = ko.observableArray();
 // These are the real estate listings that will be shown to the user.
 // Normally we'd have these in a database instead and we use this array as the original data, not changed.
 var locations = [
@@ -56,7 +56,7 @@ var initMap = function() {
       toggleBounce(this);
       populateInfoWindow(this, largeInfowindow);
     });
-    bounds.extend(markers[i].position);
+    bounds.extend(marker.position);
   }
   // Extend the boundaries of the map for each marker
   map.fitBounds(bounds);
@@ -129,7 +129,7 @@ var omnibox = {
 //Using Knockout to set up MVVM model to develop search, show list and markers functions.
 $(function(){
   var self = this;
-  var wikitArray = [];
+  var currentWikiElems = ko.observableArray();
   //Model part in MVVM pattern
   var model = {
     //This function will get data from Foursquare API by ajax, then convert the results to DOM elements
@@ -189,61 +189,47 @@ $(function(){
           dataType: "jsonp"
       })
       .done(function( data){
-        var keywords = data[1];
-        var keywordsURL = data[3];
-        var items = [];
-        if (keywords.length >0){
-          for (i=0; i<keywords.length; i++) {
-            var item = {keyword: keywords[i], keywordsURL: keywordsURL[i]};
+        var location = data[0];
+        if(data[1].length>0){
+          var keywords = data[1];
+          var shortDesc = data[2];
+          var keywordURLs = data[3];
+          var items = [];
+          //if the return results is not null
+          for(var i=0; i<data[1].length; i++){
+            var item = {keyword: keywords[i], shortDesc:shortDesc[i],keywordURL: keywordURLs[i]};
             items.push(item);
           }
-          var wikiItem = {location, items};
-          wikitArray.push(wikiItem);
-          console.log(wikitArray);
+          currentWikiElems=items;
+          console.log(currentWikiElems);
+        }
+        else{
+          //Todo: Not found.
+          //var wikiResults = {location:location, ['']};
         }
       })
       .fail(function(msg){
           $wikiElem.append('<span class="errorMsg">'+'Error: ' + xmsg +'</span>');
-      })
-      .always(function(msg){
-        //do sth.
       });
     }
   };
   //----------this part is for view ----------
-  //this part is to show the array list and wiki results after do searching.
-  var leftpartView = {
-    init: function(){
-      this.wikiElem = $('#search-results');
-      this.addressList = $('#addressList');
-      this.spot_list = $('#spot_list');
-    },
-    rendor: function(title){
-      this.addressList.empty();//clear address list
-      for (item in wikitArray) {
-        if (title == item.location){
-        this.wikiElem.append('<li class="keywords">'+
-            '<a href="'+keywordsURL[i]+'">'+keywords[i]+
-            '</a></li>');
-        }
-        else{
-          this.wikiElem.append('<span class="errorMsg">'+"Can't find the related item in WiKi with this keyword " +location +'</span>');
-        }
-      }
-    }
-  };
-
-  
-  leftpartView.init();//initialize the left part view
+  //this part is to show the wiki results after do searching.
   newLocations = ko.observableArray(locations);
+
   var ViewModel = function(){
     this.addressList = newLocations;
-    console.log(this.addressList);
-    this.clickTitle = function(title){
-      model.getResultsFromWiki(title);
-      //leftpartView.rendor(title);
+    this.currentWikiElems = null;
+    this.showAddList = ko.observable(true);
+    this.showWikiList = ko.observable(false);
+    // Load current item after clicking
+    this.loadWiki = function(item, event){
+      if(event.button ==0){
+        this.showAddList(false);
+        this.showWikiList(true);
+        model.getResultsFromWiki(item.title);
+      }
     }
-  };
-
+  }
   ko.applyBindings(new ViewModel());
 });

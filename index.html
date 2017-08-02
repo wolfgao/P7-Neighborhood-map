@@ -26,8 +26,13 @@
         text-align: left;
       }
 
-      .addressList, .searchbox .searchbutton{
+      .addressList, .searchbox {
         color: #FFFFFF;
+        font-size: 14px;
+        text-align: left;
+      }
+      .search-results {
+        color: #00FFFF;
         font-size: 14px;
         text-align: left;
       }
@@ -56,19 +61,19 @@
           <form id="searchbox_form" onsubmit="return false;"> 
               <input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" onkeyup="omnibox.keyUp()" class="searchboxinput" spellcheck="false">
           </form> 
-          <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="omnibox.search()" class="searchbutton">
+          <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="omnibox.search()" class="searchbutton">Filter
           </button>
-          <a class="gsst_a" href="javascript:void(0)" role="button" tooltip="清除搜索" aria-label="清除搜索" guidedhelpid="clear_search">
-            <span class="sbcb_a" id="sb_cb50" aria-label="清除搜索"></span>
-          </a>
         </div> 
-        <div id="addressList" data-bind="foreach: addressList" class="addressList">
+        <div id="addressList" data-bind="foreach: addressList, visible:showAddList" class="addressList">
           <li>
-            <span id="spot_list" data-bind="text: title, click:$parent.clickTitle(title)"></span>
+            <span id="spot_list" data-bind="text: title, click:$parent.loadWiki($data,event)"></span>
           </li>
         </div>
-      <div id="search-results" class="search-results">
-      </div>
+        <div id="search-results" data-bind="foreach: currentWikiElems" class="search-results" >
+            <li>
+              <a data-bind="text:shortDesc, attr: { href: keywordURL, title: keyword }"></a>
+            </li>
+        </div>
     </div>
     <div id="map"></div>
     <script src="js/main.js"></script>
