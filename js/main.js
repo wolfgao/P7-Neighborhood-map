@@ -4,15 +4,15 @@ var map;
 // These are the real estate listings that will be shown to the user.
 // Normally we'd have these in a database instead and we use this array as the original data, not changed.
 var locations = [
-    //{title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
-    //{title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
-    //{title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}},
-    //{title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
+    {title: 'Whitney Museum of American Art', location:{lat:40.7395877,lng:-74.0088629}, marker:null},
+    {title: 'Park Ave Penthouse', location: {lat: 40.7615772, lng: -73.9717627}, marker:null},
+    {title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}, marker:null},
+    {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}, marker:null},
     {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}, marker:null},
-    {title: 'Whitney Museum of American Art', location:{lat:40.7497956,lng: -73.985954}, marker:null},
-    {title: 'Lincoln Center for the Performing Arts', location:{lat:40.7577219,lng: -73.9929697}, marker:null},
+    {title: 'Lincoln Center for the Performing Arts', location:{lat:40.7479925,lng: -74.0047649}, marker:null},
     {title: 'Carnegie Hall', location:{lat:40.74973,lng: -73.986116}, marker:null},
-    {title: 'The High Line', location:{lat:40.740052,lng: -73.986116}, marker:null},
+    {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}, marker:null},
+    {title: 'The High Line', location:{lat:40.7479925,lng: -74.0047649}, marker:null},
     {title: 'Federal Reserve Bank of New York', location:{lat:40.7083688,lng: -74.0086484}, marker:null},
     {title: 'Empire State Building', location:{lat:40.7484405,lng: -73.9856644}, marker:null},
     {title: 'Times Square', location:{lat: 40.750242, lng: -73.98454}, marker:null},
@@ -22,6 +22,7 @@ var locations = [
 
 var newLocations = ko.observableArray();
 var locationsCopy = locations.clone();
+var showAddList = ko.observable();
 // Initialize Google map with markers...
 var initMap = function() {
   // Constructor creates a new map - only center and zoom are required.
@@ -124,9 +125,7 @@ var model = {
   //Json-P to get Wiki data
   //https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json
   getResultsFromWiki: function(location){
-    var $wikiElem = $('#search-results');
     var wikiURL = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+location+"&format=json";
-    
     $.ajax({
         url: wikiURL,
         method: "GET",
@@ -138,25 +137,8 @@ var model = {
         dataType: "jsonp"
     })
     .done(function( data) {
-      console.log(data);
-      var location = data[0];
-      if(data[1].length>0)
-      {
-        var keywords = data[1];
-        var shortDesc = data[2];
-        var keywordURLs = data[3];
-        var search_results = '<div id="search-results" class="search-results">'
-                              +'<h3>'+location+'</h3>'
-                              +'<li>';
-        for(var i=0; i<data[1].length; i++){
-          search_results += '<a href="'+keywordURLs[i]+'">'+keywords[i]+'</a><br>';
-          search_results += '<span>'+shortDesc[i]+'</span>';
-        }
-        search_results += '</li></div>';
-        $('#searchbox').append(search_results);
-      }else{
-        //Todo: Not found.
-      }
+      wikiView.rendor(data);
+      
     })
     .fail(function(msg){
         $wikiElem.append('<span class="errorMsg">'+'Error: ' + xmsg +'</span>');
@@ -164,7 +146,7 @@ var model = {
   },
   //Change markers array to make the clicked marker is showing
   updateMarkers: function(title){
-    $.each(newLocations,function(index, val){
+    $.each(locations,function(index, val){
       if(val.title != title){
         val.marker.setMap(null);
         //break;
@@ -211,9 +193,52 @@ var omnibox = {
     }
   },
   search: function(){
-
-  }
+    this.keyUp();
+  },
+  clear: function(){
+    wikiView.clear();
+    initMap();
+    $('#addressList').show();
+  },
 };
+
+//This is for Wiki view, left pane view of the map, when you search a location in WikiPedia, then will show results here.
+var wikiView ={
+  rendor: function(data){
+    var backBTN = '<button id="backBTN" onclick="omnibox.clear()">Clear</button>';
+    var $searchbox = $('#searchbox');
+    var search_results = '<div id="search-results" class="search-results">';
+    $searchbox.append(backBTN);
+    var location = data[0];
+    if(data[1].length>0)
+    {
+      var keywords = data[1];
+      var shortDesc = data[2];
+      var keywordURLs = data[3];
+      search_results += '<h3>'+location+'</h3><li>';
+      for(var i=0; i<data[1].length; i++){
+        search_results += '<a href="'+keywordURLs[i]+'">'+keywords[i]+'</a>';
+        search_results += '<p>Description: '+shortDesc[i]+'</p><br>';
+      }
+      search_results += '</li></div>';
+      $searchbox.append(search_results);
+    }else{
+      //Todo: Not found.
+      var strNotFound = '<p id="notfound"><span class="notfound">Sorry, can\'t find any items with keyword "'
+                        +location+'" in wikipedia.</span></p>'
+      $searchbox.append(strNotFound);
+    }
+  },
+  clear: function(){
+    if($('#search-results')){
+      $('#search-results').remove();
+    }
+    if($('#notfound')){
+      $('#notfound').remove();
+    }
+    $('#backBTN').remove();
+  }
+}
 //Using Knockout to set up MVVM model to develop search, show list and markers functions.
 $(function(){
   var self = this;
@@ -225,13 +250,11 @@ $(function(){
   var ViewModel = function(){
     this.addressList = newLocations;
     this.showAddList = ko.observable(true);
-    this.showWikiList = ko.observable(false);
     // Load current item after clicking
     this.loadWiki = function(item, event){
       if(event.button ==0){
         model.updateMarkers(item.title);
         this.showAddList(false);
-        this.showWikiList(true);
         model.getResultsFromWiki(item.title);
       }
       else{
