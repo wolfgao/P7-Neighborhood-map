@@ -17,7 +17,7 @@
         line-height: 35px;
         padding: 10px 10px 30px 10px;
         text-align: left;
-        width: 38%;
+        width: 31%;
       }
       h1 {
         color: #FFFFFF;
@@ -32,19 +32,25 @@
         text-align: left;
       }
       .search-results {
-        color: #00FFFF;
-        font-size: 14px;
+        color: #FFFFFF;
+        font-size: 12px;
         text-align: left;
+        margin: 5px;
+        padding: 5px;
       }
       #searchboxinput {
         color: #000000;
         font-size: 14px;
+        width: 70%;
       }
+      a{color:#00FFFF;font-size: 14px;text-decoration:underline;}
+      a:hover{color:#FF00FF;text-decoration:underline;}
+      a:visited{color:#ADFF2F;text-decoration:none;}
 
       #map {
         bottom:0px;
         height: 100%;
-        left: 362px;
+        left: 32%;
         position: absolute;
         right: 0px;
       }
@@ -64,16 +70,19 @@
           <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="omnibox.search()" class="searchbutton">Filter
           </button>
         </div> 
+        <br>
         <div id="addressList" data-bind="foreach: addressList, visible:showAddList" class="addressList">
           <li>
             <span id="spot_list" data-bind="text: title, click:$parent.loadWiki($data,event)"></span>
           </li>
         </div>
+        <!--
         <div id="search-results" data-bind="foreach: currentWikiElems" class="search-results" >
             <li>
-              <a data-bind="text:shortDesc, attr: { href: keywordURL, title: keyword }"></a>
+              <span data-bind="text: keyword"></span>
             </li>
         </div>
+        -->
     </div>
     <div id="map"></div>
     <script src="js/main.js"></script>

@@ -6,19 +6,19 @@ var markers = ko.observableArray();
 // These are the real estate listings that will be shown to the user.
 // Normally we'd have these in a database instead and we use this array as the original data, not changed.
 var locations = [
-    {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
-    {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
-    {title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}},
-    {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
-    {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}},
+    //{title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
+    //{title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
+    //{title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}},
+    //{title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
+    //{title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}},
     {title: 'Whitney Museum of American Art', location:{lat:40.7497956,lng: -73.985954}},
     {title: 'Lincoln Center for the Performing Arts', location:{lat:40.7577219,lng: -73.9929697}},
-    {title: 'Carnegie Hall', location:{lat:40.74973,lng: -73.986116}},
-    {title: 'The High Line', location:{lat:40.740052,lng: -73.986116}},
-    {title: 'Federal Reserve Bank of New York', location:{lat:40.7083688,lng: -74.0086484}},
-    {title: 'Empire State Building', location:{lat:40.7484405,lng: -73.9856644}},
+    //{title: 'Carnegie Hall', location:{lat:40.74973,lng: -73.986116}},
+    //{title: 'The High Line', location:{lat:40.740052,lng: -73.986116}},
+    //{title: 'Federal Reserve Bank of New York', location:{lat:40.7083688,lng: -74.0086484}},
+    //{title: 'Empire State Building', location:{lat:40.7484405,lng: -73.9856644}},
     {title: 'Times Square', location:{lat: 40.750242, lng: -73.98454}},
-    {title: 'World Trade Center Memorial Foundation', location:{lat: 40.7106212, lng: -74.0155509}},
+    //{title: 'World Trade Center Memorial Foundation', location:{lat: 40.7106212, lng: -74.0155509}},
     {title: 'New York Stock Exchange', location:{lat: 40.706877, lng: -74.0112654}}
   ];
 
@@ -129,7 +129,7 @@ var omnibox = {
 //Using Knockout to set up MVVM model to develop search, show list and markers functions.
 $(function(){
   var self = this;
-  var currentWikiElems = ko.observableArray();
+  var WikiElems = ko.observableArray([]);
   //Model part in MVVM pattern
   var model = {
     //This function will get data from Foursquare API by ajax, then convert the results to DOM elements
@@ -188,22 +188,29 @@ $(function(){
               },
           dataType: "jsonp"
       })
-      .done(function( data){
+      .done(function( data) {
+        console.log(data);
         var location = data[0];
-        if(data[1].length>0){
+        if(data[1].length>0)
+        {
           var keywords = data[1];
           var shortDesc = data[2];
           var keywordURLs = data[3];
-          var items = [];
-          //if the return results is not null
+          //var items = [];
+          //this.currentWikiElems = ko.observableArray([{keyword:'ssdd', keywordURL:'dkjalk', shortDesc:'damdnam,'}]);
+          var search_results = '<div id="search-results" class="search-results">'
+                                +'<h3>'+location+'</h3>'
+                                +'<li>';
           for(var i=0; i<data[1].length; i++){
-            var item = {keyword: keywords[i], shortDesc:shortDesc[i],keywordURL: keywordURLs[i]};
-            items.push(item);
+            //var item = {keyword: keywords[i], shortDesc:shortDesc[i],keywordURL: keywordURLs[i]};
+            //this.currentWikiElems.push(item);
+            search_results += '<a href="'+keywordURLs[i]+'">'+keywords[i]+'</a><br>';
+            search_results += '<span>'+shortDesc[i]+'</span>';
           }
-          currentWikiElems=items;
-          console.log(currentWikiElems);
-        }
-        else{
+          search_results += '</li></div>';
+          $('#searchbox').append(search_results);
+          //this.currentWikiElems = WikiElems;
+        }else{
           //Todo: Not found.
           //var wikiResults = {location:location, ['']};
         }
@@ -214,20 +221,22 @@ $(function(){
     }
   };
   //----------this part is for view ----------
-  //this part is to show the wiki results after do searching.
   newLocations = ko.observableArray(locations);
 
   var ViewModel = function(){
     this.addressList = newLocations;
-    this.currentWikiElems = null;
     this.showAddList = ko.observable(true);
-    this.showWikiList = ko.observable(false);
+    //this.showWikiList = ko.observable(false);
     // Load current item after clicking
     this.loadWiki = function(item, event){
       if(event.button ==0){
+        
         this.showAddList(false);
-        this.showWikiList(true);
+        //this.showWikiList(true);
         model.getResultsFromWiki(item.title);
+      }
+      else{
+        //ko.cleanNode($('#search-results')[0]);
       }
     }
   }
