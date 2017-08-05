@@ -8,14 +8,14 @@ var locations = [
     {title: 'Park Ave Penthouse', location: {lat: 40.7615772, lng: -73.9717627}, marker:null},
     {title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}, marker:null},
     {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}, marker:null},
-    {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}, marker:null},
-    {title: 'Lincoln Center for the Performing Arts', location:{lat:40.7479925,lng: -74.0047649}, marker:null},
-    {title: 'Carnegie Hall', location:{lat:40.74973,lng: -73.986116}, marker:null},
+    {title: 'Museum Of Chinese In America', location: {lat: 40.7195241, lng: -73.9992096}, marker:null},
+    {title: 'Lincoln Center for the Performing Arts', location:{lat:40.7724641,lng: -73.9834889}, marker:null},
+    {title: 'Carnegie Hall', location:{lat:40.7651283,lng: -73.9799273}, marker:null},
     {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}, marker:null},
     {title: 'The High Line', location:{lat:40.7479925,lng: -74.0047649}, marker:null},
     {title: 'Federal Reserve Bank of New York', location:{lat:40.7083688,lng: -74.0086484}, marker:null},
     {title: 'Empire State Building', location:{lat:40.7484405,lng: -73.9856644}, marker:null},
-    {title: 'Times Square', location:{lat: 40.750242, lng: -73.98454}, marker:null},
+    {title: 'Times Square', location:{lat: 40.758895, lng: -73.985131}, marker:null},
     {title: 'World Trade Center Memorial Foundation', location:{lat: 40.7106212, lng: -74.0155509}, marker:null},
     {title: 'New York Stock Exchange', location:{lat: 40.706877, lng: -74.0112654}, marker:null}
   ];
@@ -42,12 +42,12 @@ var initMap = function() {
     // Create a marker per location, and put into markers array.
     locations[i].marker = new google.maps.Marker({
       map: map,
+      draggable: true,
       position: position,
       title: title,
       animation: google.maps.Animation.DROP,
       id: i
     });
-
     // Create an onclick event to open an infowindow at each marker.
     locations[i].marker.addListener('click', function() {
       toggleBounce(this);
@@ -71,13 +71,12 @@ function toggleBounce(marker) {
 // This function populates the infowindow when the marker is clicked. We'll only allow
 // one infowindow which will open at the marker that is clicked, and populate based
 // on that markers position.
+
 function populateInfoWindow(marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
   if (infowindow.marker != marker) {
     infowindow.marker = marker;
-    infowindow.setContent('<div>' + marker.title + '</div>');
-    model.getDataFromFourSquare(marker.position);
-    infowindow.open(map, marker);
+    model.getDataFromFourSquare(infowindow);
     // Make sure the marker property is cleared if the infowindow is closed.
     infowindow.addListener('closeclick',function(){
       infowindow.setMarker = null;
@@ -91,11 +90,10 @@ var model = {
   //and any other parameters that the endpoint requires:
   //https://api.foursquare.com/v2/venues/search?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815
   //  &ll=40.7,-74
-  getDataFromFourSquare: function(location){
+  getDataFromFourSquare: function(infowindow){
     var currentDate = new Date().Format('yyyyMMdd'); //Get current date and formate it to yyyyMMdd
-    console.log(currentDate);
-    var loc = location.lat()+','+location.lng();
-    console.log(loc);
+    var position = infowindow.marker.position;
+    var loc = position.lat()+','+position.lng();
     $.ajax({
       method: "GET",
       url: "https://api.foursquare.com/v2/venues/search",
@@ -107,20 +105,18 @@ var model = {
       }
     })
     .done(function( data ) {
-      var venues =data.response.venues;
-      venues.forEach(function(val, index){
-        console.log(val.name);
-        console.log(location.address+location.lat+location.lng);
-      });
-      return venues;
+      if (data != null){
+        var venues =data.response.venues;
+        infoWindownView.rendor(venues, infowindow);
+      }
     })
     .fail(function(msg){
       //do sth.
-      console.log(msg);
+      //console.log(msg);
+      var errorMsg = '<h3> Sorry, failed to get data from Foursquare right now, please check your network and try again.</h3>'
+                      + '<br> Error Message:'+ msg;
+      infowindow.setContent(errorMsg);
     })
-    .always(function(msg){
-      //do something
-    });
   },
   //Json-P to get Wiki data
   //https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json
@@ -138,10 +134,9 @@ var model = {
     })
     .done(function( data) {
       wikiView.rendor(data);
-      
     })
     .fail(function(msg){
-        $wikiElem.append('<span class="errorMsg">'+'Error: ' + xmsg +'</span>');
+        $wikiElem.append('<span class="errorMsg">'+'Error: ' + msg +'</span>');
     });
   },
   //Change markers array to make the clicked marker is showing
@@ -155,7 +150,8 @@ var model = {
   }
 }
 
-//---------- this is for controller part ----------------
+// ---------- this is for controller part ----------------
+// Basically it will handle the requests from UI, then get data from Model, then show the responses on UI.
 var omnibox = {
   inputText: null,
   keyUp: function(){
@@ -179,7 +175,7 @@ var omnibox = {
           }
         }
       });
-      alert(locations.length);
+      //alert(locations.length);
     }
     else{
       if(locations.length<locationsCopy.length) {//some values are removed, so roll back them.
@@ -201,7 +197,7 @@ var omnibox = {
     $('#addressList').show();
   },
 };
-
+// ---------------- View part --------------------
 //This is for Wiki view, left pane view of the map, when you search a location in WikiPedia, then will show results here.
 var wikiView ={
   rendor: function(data){
@@ -215,7 +211,7 @@ var wikiView ={
       var keywords = data[1];
       var shortDesc = data[2];
       var keywordURLs = data[3];
-      search_results += '<h3>'+location+'</h3><li>';
+      search_results += '<h3>'+location+' from WikiPedia</h3><li>';
       for(var i=0; i<data[1].length; i++){
         search_results += '<a href="'+keywordURLs[i]+'">'+keywords[i]+'</a>';
         search_results += '<p>Description: '+shortDesc[i]+'</p><br>';
@@ -239,12 +235,51 @@ var wikiView ={
     $('#backBTN').remove();
   }
 }
+// This is for pop window by clicking markers.
+var infoWindownView ={
+  rendor: function(venues, infowindow){
+    var popWindow = '<div class="infowindow" id="infowindow"><h3 align="center">'+infowindow.marker.title+'</h3>';
+    var tableDOM ='<table><tr><th>Category:</th><th>Address:</th><th>Website:</th></tr>'
+    var contentDOM = '';
+    //basically the venues lengh = 30, we can't show all records, so just 5 records.
+    for(var i=0; i<5; i++){
+      var val = venues[i];
+      var name = val.name;
+      var catagories = val.categories[0].name;
+      var url = val.url;
+      var location = {lat:val.location.lat, lng:val.location.lng};
+      var address = val.location.formattedAddress;
+      /**  If you want to change marker icon, just unblock these.
+      var icon = val.categories[0].icon.prefix+'64'+val.categories[0].icon.suffix;
+      var image = {
+        url: icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+      infowindow.setIcon(image);
+      */
+      var categoryDOM = '<tr><td>' + catagories +'</td>';
+      var addressDOM = '<td>' + address+'</td>';
+      var websiteDOM = '<td><a href="' + url +'" class= infowindow>' + name + '</a></td>';
+      var oneRecord =  categoryDOM + addressDOM + websiteDOM + '</tr>';
+      contentDOM += oneRecord;
+      //infowindow.marker.setIcon(image);
+    };
+    //console.log(contentDOM);
+    var streetView = "http://maps.googleapis.com/maps/api/streetview?location="
+                        +infowindow.marker.position.lat()+','+infowindow.marker.position.lng()
+                        +'&size=400x300&heading=60&fov=90&pitch=10';
+    var streetImag  = '<img src="'+streetView+'"></img>';
+    contentDOM =popWindow + tableDOM + contentDOM + '</table><br>' + streetImag+'</div>';
+    infowindow.setContent(contentDOM);
+    infowindow.open(map, infowindow.marker);
+  }
+}
 //Using Knockout to set up MVVM model to develop search, show list and markers functions.
 $(function(){
   var self = this;
-  //Model part in MVVM pattern
-  
-  //----------this part is for view ----------
   newLocations = ko.observableArray(locations);
 
   var ViewModel = function(){
@@ -252,13 +287,10 @@ $(function(){
     this.showAddList = ko.observable(true);
     // Load current item after clicking
     this.loadWiki = function(item, event){
-      if(event.button ==0){
+      if(event.button ==0){ // Only handle the real click action, otherwise it will handle data with the loop.
         model.updateMarkers(item.title);
         this.showAddList(false);
         model.getResultsFromWiki(item.title);
-      }
-      else{
-        //ko.cleanNode($('#search-results')[0]);
       }
     }
   }
