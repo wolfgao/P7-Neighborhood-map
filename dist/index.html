@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>html,
+      body {
+        font-family: Arial, sans-serif, white;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .search-box {
+        background: #000000;
+        border: 1px solid #999;
+        border-radius: 3px;
+        line-height: 35px;
+        padding: 10px 10px 30px 10px;
+        text-align: left;
+        width: 31%;
+        height: 100%;
+        overflow-y:scroll;
+      }
+      h1 {
+        color: #FFFFFF;
+        font-size: 20px;
+        margin: 0 0 10px 0;
+        text-align: left;
+      }
+
+      .addressList, .searchbox {
+        color: #FFFFFF;
+        font-size: 14px;
+        text-align: left;
+      }
+      .search-results {
+        color: #FFFFFF;
+        font-size: 12px;
+        text-align: left;
+        margin: 5px;
+        padding: 5px;
+      }
+      .infowindow a{color: #0000FF;}
+      #searchboxinput {
+        color: #000000;
+        font-size: 14px;
+        width: 70%;
+      }
+      .notfound{
+        color: #FF1493;
+        font-size: 14px;
+      }
+      a{color:#00FFFF;font-size: 14px;text-decoration:underline;}
+      a:hover{color:#FF00FF;text-decoration:underline;}
+      a:visited{color:#ADFF2F;text-decoration:none;}
+
+      #map {
+        bottom:0px;
+        height: 100%;
+        left: 32%;
+        position: absolute;
+        right: 0px;
+      }</style><script src="js/libs/knockout-3.4.2.js"></script><script src="js/libs/jquery.min.js"></script><script src="js/libs/utils.js"></script></head><body><div class="search-box"><h1>Find Your Neighborhood In NYC</h1><div id="searchbox" role="search" class="searchbox"><form id="searchbox_form" onsubmit="return false;"><input aria-label="搜索 Google 地图" autocomplete="off" id="searchboxinput" name="q" onkeyup="omnibox.keyUp()" class="searchboxinput" spellcheck="false"> <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="omnibox.search()" class="searchbutton">Filter</button></form></div><br><div id="addressList" data-bind="foreach: addressList, visible:showAddList" class="addressList"><li><span id="spot_list" data-bind="text: title, click:$parent.loadWiki($data,event)"></span></li></div></div><div id="map"></div><script src="js/main.js"></script><script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCqYws-DUG9U254coGf2QHlzqcIj2tlRKA&v=3&callback=initMap"></script></body></html>
