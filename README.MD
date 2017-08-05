@@ -22,26 +22,27 @@
 #### 数组和binding
     把主要的数组locations作为了KnockOut的observableArray，里面包含了keyword，location坐标和marker，这个非常方便，这样我们通过对这个数组的实时操作和UI的显示结合起来。但是由于他变成了一个动态数据，我们无法获得原始数据，因此我这里对原始数据clone了一份，这样任何时候需要原始数据都可以获得，这个是整个搜索算法的核心。
 
-    ``` js
+`` js
     var newLocations = ko.observableArray();
     var locationsCopy = locations.clone();
-    ```
+``
+
     另外如果对数组bind以后，随着数据的每一次loop都会调用click事件，这个让我苦恼了好处事件，实际上我不希望他在初始化的时候每一次调用click事件，而是希望真正鼠标进行click之后再调用这个函数，加载和显示当前纪录。终于我想到了鼠标事件MouseEvent的使用，event.button返回是0的时候，才是鼠标的click事件触发了，解决了这个问题。
 
-    ``` js
+`` js
     this.loadWiki = function(item, event){
       if(event.button ==0){ // Only handle the real click action, otherwise it will handle data with the loop.
         model.updateMarkers(item.title);
         this.showAddList(false);
         model.getResultsFromWiki(item.title);
       }
-    ```
+``
 
 #### 两次绑定的困惑：
     我本来打算对返回WikiPidea数组继续绑定时，总是提示我两次绑定一个值，因为wiki数据实际上是loadWiKi函数里面发生的，我一直希望突破这个错误，但是要么就是对当前的wiki数组没有定义，要么就是两次绑定，我希望接下来再继续突破。因此，我只好把wiki返回结果动态加载在DOM元素中，而不是先定义好元素，然后bind去动态显示。
 #### Google maps API的使用：
 - makers的动态效果，谷歌也有明确的函数，直接使用，不用自己再生写。
-``` js
+`` js
     function toggleBounce(marker) {  
         if (marker.getAnimation() != null) {
             marker.setAnimation(null);
@@ -49,13 +50,13 @@
             marker.setAnimation(google.maps.Animation.BOUNCE);
         }
     };
-```
+``
 - 街景图片的获取，这个也是直接读取API文档，多试几次即可，里面有3个主要的属性: heading, fov和pitch, 有[详细文档说明](https://developers.google.com/maps/documentation/streetview/)，这里就不赘述。
-``` js
+`` js
     var streetView = "http://maps.googleapis.com/maps/api/streetview?location="
                         +infowindow.marker.position.lat()+','+infowindow.marker.position.lng()
                         +'&size=400x300&heading=60&fov=90&pitch=10';
-```
+``
 - InfoWindow的使用，总统来说比较简单，其实相当于一个弹出窗口，主要是如何去把这个窗口的创建和消除逻辑想好，再把DOM元素的逻辑想好即可。
 
 ### jQuery.ajax()部分：
