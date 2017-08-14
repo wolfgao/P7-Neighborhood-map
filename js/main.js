@@ -124,15 +124,6 @@ var populateInfoWindow = function(marker, infowindow) {
     }
 };
 
-var clear = function(){
-    $('#backBTN').remove();
-    $('.search-results').remove();
-    if($('.notfound').html()){
-      $('.notfound').remove();
-    }
-    initMap();
-    $('.addressList').show();
-}
 
 
 // ---------------- View part --------------------
@@ -158,14 +149,6 @@ var infowindowShow = function(){
     myInfowindow.open(map, myInfowindow.marker);
 }
 
-function openNav() {
-    document.getElementById("search-box").style.width = "28%";
-}
-
-function closeNav() {
-    document.getElementById("search-box").style.width = "0";
-}
-
 // ---------- this is for controller part ----------------
 // Basically it will handle the requests from UI, then get data from Model, then show the responses on UI.
 //Using Knockout to set up MVVM model to develop search, show list and markers functions.
@@ -173,8 +156,16 @@ function closeNav() {
 
 var viewModel = function(){
   var self = this;
+  //Handle open-close side nav menu
+  self.sideNavWidth = ko.observable('');
+  self.openBtn = function() {
+    self.sideNavWidth('0');
+  };
+  self.closeBtn = function() {
+    self.sideNavWidth('-315px');
+  };
 
-  self.showWikiList = ko.observable(true);
+  self.showWikiList = ko.observable(false);
   self.showAddList = ko.observable(true);
 
   //inital array for locations and infowindow
@@ -226,6 +217,7 @@ var viewModel = function(){
      if (event.button == 0){ //mouse click event
       clearMarkers(item.title);
       self.showAddList(false);
+      self.showWikiList(true);
       //$('.addressList').remove();
       $('.searchbox').after($('.search-results'));
       //self.showWikiList(true);
@@ -247,22 +239,28 @@ var viewModel = function(){
             brief: data[2][0],
             url: data[3][0]
           };
-          this.currentWiki = ko.observable(result);
-          console.log(this.currentWiki());
+          self.currentWiki(result);
+          console.log(self.currentWiki());
         }
         else{
-          //can't find any records from Wikipedia
-        $('#search-results').append('<span class="notfound">Sorry, can\'t find any records from Wikipedia with this keyword "'
-                                  + item.title +'"! </span>');
+          self.currentWiki('Sorry, can\'t find any records from Wikipedia with this keyword');
         }
       })
       .fail(function(msg){
-        $('#search-results').append('<span class="errorMsg">'+'Error: ' + msg +'</span>');
+        self.currentWiki('Error: ' + msg);
       });
     }
   }
 }
 
+self.clearWiki = function(){
+    self.showAddList(true);
+    self.showWikiList(false);
+    if($('.notfound').html()){
+      $('.notfound').remove();
+    }
+    initMap();
+}
 //get information from Foursquare
 self.filterVenues = ko.observableArray();
 self.getDataFromFourSquare = function(){
