@@ -27,7 +27,7 @@
         position: fixed;
         height: 100%;
         width: 300px
-        left: -310px;
+        left: -315px;
         overflow-x: scroll;
         overflow-y:scroll;
         transition: 0.5s;
@@ -75,8 +75,9 @@
       .notfound{
         color: #FF1493;
         font-size: 14px;
+        width: 300px;
       }
-      a{color:#00FFFF;font-size: 14px;text-decoration:underline;}
+      a{color:#00BFFF;font-size: 14px;text-decoration:underline;}
       a:hover{color:#FF00FF;text-decoration:underline;}
       a:visited{color:#ADFF2F;text-decoration:none;}
 
@@ -99,7 +100,7 @@
             <input data-bind="textInput: query" autocomplete="off" id="searchboxinput" class="searchboxinput" spellcheck="false">
             <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="search()" class="searchbutton">Filter
             </button>
-            <button id="backBTN" data-bind="click: clearWiki">Go back</button>
+            <button id="backBTN" data-bind="click: clearWiki">Clear and Go back</button>
         </div>
         <br>
         <div id="addressList" data-bind="foreach: addressList, visible: showAddList" class="addressList">
@@ -113,10 +114,21 @@
           <p data-bind="text: brief"></p>
           <br>
         </div>
+        <div class="notfound"><span data-bind="text: errorMsg"></span></div>
     </div>
     <div class="main">
     <button class="open-btn" data-bind="click: openBtn">&#9776;</button>
-    <div id="map"></div>
+    <div id="map" align="center"></div>
+     <div data-bind="" id="infowindow-foursqure" style="display: none;">
+      <h3 align="center" data-bind="text: infoMarkerTitle"></h3>
+      <ul align="left" data-bind="foreach: filterVenues">
+         <li data-bind="text: category"></li>
+         <li data-bind="text: address"></li>
+         <li><a data-bind="attr: {href: url, title: name }, text: name"></a></li>
+         <hr>
+      </ul>
+   <img data-bind="attr:{src: streetViewUrl}">
+ </div>
     </div>
     <script src="js/main.js"></script>
     <script async defer

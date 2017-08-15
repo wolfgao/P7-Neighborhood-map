@@ -28,15 +28,18 @@
     另外如果对数组bind以后，随着数据的每一次loop都会调用click事件，这个让我苦恼了好处事件，实际上我不希望他在初始化的时候每一次调用click事件，而是希望真正鼠标进行click之后再调用这个函数，加载和显示当前纪录。终于我想到了鼠标事件MouseEvent的使用，event.button返回是0的时候，才是鼠标的click事件触发了，解决了这个问题。
 
 ``` js
-    this.loadWiki = function(item, event){
+    self.loadWiki = function(item, event){
       if(event.button ==0){ // Only handle the real click action, otherwise it will handle data with the loop.
         model.updateMarkers(item.title);
-        this.showAddList(false);
+        self.showAddList(false);
         model.getResultsFromWiki(item.title);
       }
 ```
 #### 两次绑定的困惑：
     我本来打算对返回WikiPidea数组继续绑定时，总是提示我两次绑定一个值，因为wiki数据实际上是loadWiKi函数里面发生的，我一直希望突破这个错误，但是要么就是对当前的wiki数组没有定义，要么就是两次绑定，我希望接下来再继续突破。因此，我只好把wiki返回结果动态加载在DOM元素中，而不是先定义好元素，然后bind去动态显示。
+    最终在老师的提示下，我终于明白我的问题，主要是this和self的区别没有搞清楚。
+    - 在viewModel里面，如果通过this来访问，可能是访问全局变量，不是viewModel里面的变量。因此大多数情况需要通过 self 来访问；
+    - 在 Knockout 中要设置（更新）一个 observable 值，是通过调用函数然后传入一个参数来实现的呢，而不是通过 = 赋值完成的哦；
 
 #### Google maps API的使用：
 - makers的动态效果，谷歌也有明确的函数，直接使用，不用自己再生写。
@@ -64,7 +67,8 @@ var streetView = "http://maps.googleapis.com/maps/api/streetview?location="
 - 从Foursquare获得数据：
     这部分也不难，同样要去该网站[https://developer.foursquare.com/](https://developer.foursquare.com/),最好的办法就是把获取的json数据自己log下来进行解析，然后去的相关的值，当然这里面发现了两个问题，第一个返回值里面有一个30元素的数据，太多了，我最终只取了前5个，第二个问题是，返回值里面有些元素会是空的，比如contact, 或者url对象，有的纪录就没有。应该对每个返回值是否为空加一个判断，我这里没有做，但是后期会加的。
     如果不知道如何解析，也可以看他的文档里面有对一个[venue完整纪录的文档](https://developer.foursquare.com/docs/responses/venue).
-** 如何处理ajax的异常，这个也不难，主要是jQuery的文档已经有介绍，可以去仔细阅读和实验一下:[http://api.jquery.com/jquery.ajax/](http://api.jquery.com/jquery.ajax/)
+    
+- 如何处理ajax的异常，这个也不难，主要是jQuery的文档已经有介绍，可以去仔细阅读和实验一下:[http://api.jquery.com/jquery.ajax/](http://api.jquery.com/jquery.ajax/)
 
 #### 其他重要部分：
 - 正则表达式：
