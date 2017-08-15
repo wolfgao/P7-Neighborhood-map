@@ -2,29 +2,41 @@
       body {
         font-family: Arial, sans-serif, white;
         height: 100%;
-        margin: 0;
-        padding: 0;
+        width: 100%;
       }
-      .search-box {
-        background: #000000;
-        border: 1px solid #999;
-        border-radius: 3px;
-        line-height: 35px;
-        padding: 10px 10px 30px 10px;
-        text-align: left;
-        width: 28%;
+      #map {
+        width: 100%;
         height: 100%;
+        position: absolute;
+        right: 0px;
+      }
+
+      .sideNav {
+        background: #000000;
+        z-index: 1;
+        top: 0;
+        line-height: 30px;
+        padding: 5px;
+        text-align: left;
+        position: fixed;
+        height: 100%;
+        width: 290px
+        left: -315px;
+        overflow-x: scroll;
         overflow-y:scroll;
         transition: 0.5s;
       }
-      .sideNav .closebtn {
-        background: #000000;
-        position: absolute;
-        top: 0;
-        right: 25px;
-        font-size: 30px;
-        margin-left: 0px;
+      .closebtn {
+        float: right;
       }
+      .close-btn,
+      .open-btn {
+       background-color: black;
+       color: white;
+       border-radius: 1px;
+       border-style: none;
+       margin-bottom: 5px;
+     }
       h1 {
         color: #FFFFFF;
         font-size: 20px;
@@ -32,21 +44,22 @@
         text-align: left;
       }
 
-      .addressList, .searchbox .sideNav{
+      .addressList .sideNav{
         color: #FFFFFF;
         font-size: 14px;
         text-align: left;
       }
       .search-results {
         color: #FFFFFF;
-        font-size: 12px;
-        text-align: left;
-        margin: 5px;
-        padding: 5px;
+        width: 290px;
+        position: fixed;
+        margin: 0px;
+        padding: 3px;
+        overflow-x: scroll;
       }
       .infowindow a{color: #0000FF;}
       .infowindow {
-        width: 350px;
+        width: 320px;
       }
       #searchboxinput {
         color: #000000;
@@ -56,16 +69,13 @@
       .notfound{
         color: #FF1493;
         font-size: 14px;
+        width: 290px;
       }
-      a{color:#00FFFF;font-size: 14px;text-decoration:underline;}
+      a{color:#00BFFF;font-size: 14px;text-decoration:underline;}
       a:hover{color:#FF00FF;text-decoration:underline;}
       a:visited{color:#ADFF2F;text-decoration:none;}
 
-      #map {
-        bottom:0px;
-        height: 100%;
-        width: 100%;
-        left: 29%;
-        position: absolute;
-        right: 0px;
-      }</style><script src="js/libs/knockout-3.4.2.js"></script><script src="js/libs/jquery.min.js"></script><script src="js/libs/utils.js"></script></head><body><div class="sideNav" id="sideNav"><span style="font-size:24px;cursor:pointer" onclick="openNav()">&#9776;</span></div><div class="search-box" id="search-box"><a href="javascript:void(0)" class="closebtn" style="font-size:24px" onclick="closeNav()" align="right">&times;</a><h1>Find Your Neighborhood In NYC</h1><div id="searchbox" role="search" class="searchbox"><input data-bind="textInput: query" autocomplete="off" id="searchboxinput" class="searchboxinput" spellcheck="false"> <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="search()" class="searchbutton">Filter</button> <button id="backBTN" onclick="clear()">Clear</button></div><br><div id="addressList" data-bind="foreach: addressList, visible: showAddList" class="addressList"><li><a href="#" id="spot_list" data-bind="text: title, click:$parent.loadWiki($data,event),clickBubble: false"></a></li></div><div id="search-results" data-bind="with: currentWiki" class="search-results"><h3 data-bind="text: name"></h3><a href data-bind="attr: {href: url, title: name }"></a><p data-bind="text: brief"></p><br></div></div><div id="map"></div><script src="js/main.js"></script><script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCqYws-DUG9U254coGf2QHlzqcIj2tlRKA&v=3&callback=initMap" onerror="mapErrorHandler()"></script></body></html>
+       .main {
+         transition: margin-left .5s;
+         padding: 16px;
+       }</style><script src="js/libs/knockout-3.4.2.js"></script><script src="js/libs/jquery.min.js"></script><script src="js/libs/utils.js"></script></head><body><div class="sideNav" id="sideNav" data-bind="style:{left: sideNavWidth}"><button class="close-btn" data-bind="click: closeBtn" align="right">X</button><h1>Find Your Neighborhood In NYC</h1><div id="searchbox" role="search" class="searchbox"><input data-bind="textInput: query" autocomplete="off" id="searchboxinput" class="searchboxinput" spellcheck="false"> <button aria-label="搜索" guidedhelpid="searchbutton" id="searchbutton" onclick="search()" class="searchbutton">Filter</button> <button id="backBTN" data-bind="click: clearWiki">Clear and Go back</button></div><br><div id="addressList" data-bind="foreach: addressList, visible: showAddList" class="addressList"><li><a href="#" id="spot_list" data-bind="text: title, click:$parent.loadWiki($data,event),clickBubble: false"></a></li></div><div id="search-results" data-bind="with: currentWiki, visible: showWikiList" class="search-results"><h3 data-bind="text: name"></h3><a data-bind="attr: { href: url}, text: name"></a><p data-bind="text: brief"></p><br></div><div class="notfound"><span data-bind="text: errorMsg, visible: showErrorMsg"></span></div></div><div class="main"><button class="open-btn" data-bind="click: openBtn">&#9776;</button><div id="map" align="center"></div><div data-bind="" id="infowindow-foursqure" style="display: none"><h3 align="center" data-bind="text: infoMarkerTitle"></h3><ul align="left" data-bind="foreach: filterVenues"><li data-bind="text: category"></li><li data-bind="text: address"></li><li><a data-bind="attr: {href: url, title: name }, text: name"></a></li><hr></ul><img data-bind="attr:{src: streetViewUrl}"></div></div><script src="js/main.js"></script><script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCqYws-DUG9U254coGf2QHlzqcIj2tlRKA&v=3&callback=initMap" onerror="mapErrorHandler()"></script></body></html>

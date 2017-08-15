@@ -40,7 +40,7 @@ function Place(data) {
   this.name = data.name;
   this.lat = data.location.lat;
   this.lng = data.location.lng;
-  this.category = data.categories[0].pluralName;
+  this.category = data.categories[0].name;
   this.address = data.location.formattedAddress;
   this.url = this.getUrl(data);
 }
@@ -111,60 +111,19 @@ function toggleBounce(marker) {
 // one infowindow which will open at the marker that is clicked, and populate based
 // on that markers position.
 var populateInfoWindow = function(marker, infowindow) {
-    // Check to make sure the infowindow is not already opened on this marker.
-    myInfowindow = infowindow;
-    if (infowindow.marker != marker) {
-      myInfowindow.marker = marker;
-      infowindowShow();
-      viewModel.getDataFromFourSquare();
-      // Make sure the marker property is cleared if the infowindow is closed.
-      infowindow.addListener('closeclick',function(){
-        infowindow.setMarker = null;
-      });
-    }
+  viewModel.clearFourSquareData();//clear array before loading next marker
+  // Check to make sure the infowindow is not already opened on this marker.
+  myInfowindow = infowindow;
+
+  if (infowindow.marker != marker) {
+    myInfowindow.marker = marker;
+    viewModel.getDataFromFourSquare(marker);
+    // Make sure the marker property is cleared if the infowindow is closed.
+    infowindow.addListener('closeclick',function(){
+      infowindow.setMarker = null;
+    });
+  }
 };
-
-var clear = function(){
-    $('#backBTN').remove();
-    $('.search-results').remove();
-    if($('.notfound').html()){
-      $('.notfound').remove();
-    }
-    initMap();
-    $('.addressList').show();
-}
-
-
-// ---------------- View part --------------------
-// This is for pop window by clicking markers.
-var infowindowShow = function(){
-    var popWindow = '<div class="infowindow" data-bind="foreach: filterVenues" id="infowindow"><h3 align="center">'+myInfowindow.marker.title+'</h3>';
-    var tableDOM ='<table><tr><th>Category:</th><th>Address:</th><th>Website:</th></tr>'
-    //Each record
-    var categoryDOM = '<tr><td data-bind="text: categories"></td>';
-    var addressDOM = '<td data-bind="text: address"></td>';
-    var websiteDOM = '<td><a data-bind="attr: {href: url, title: name }"></a></td>';
-
-    //Complete all records UI rendoring
-    var contentDOM = popWindow+tableDOM+categoryDOM+addressDOM+websiteDOM+'</table><br>';
-
-    var streetView = "http://maps.googleapis.com/maps/api/streetview?location="
-                        +myInfowindow.marker.position.lat()+','+ myInfowindow.marker.position.lng()
-                        +'&size=400x300&heading=60&fov=90&pitch=10';
-    var streetImag  = '<img src="'+streetView+'"></img>';
-
-    contentDOM = contentDOM + streetImag+'</div>';
-    myInfowindow.setContent(contentDOM);
-    myInfowindow.open(map, myInfowindow.marker);
-}
-
-function openNav() {
-    document.getElementById("search-box").style.width = "28%";
-}
-
-function closeNav() {
-    document.getElementById("search-box").style.width = "0";
-}
 
 // ---------- this is for controller part ----------------
 // Basically it will handle the requests from UI, then get data from Model, then show the responses on UI.
@@ -173,8 +132,16 @@ function closeNav() {
 
 var viewModel = function(){
   var self = this;
+  //Handle open-close side nav menu
+  self.sideNavWidth = ko.observable('');
+  self.openBtn = function() {
+    self.sideNavWidth('0');
+  };
+  self.closeBtn = function() {
+    self.sideNavWidth('-320px');
+  };
 
-  self.showWikiList = ko.observable(true);
+  self.showWikiList = ko.observable(false);
   self.showAddList = ko.observable(true);
 
   //inital array for locations and infowindow
@@ -208,24 +175,34 @@ var viewModel = function(){
     }
   });
 
-  var clearMarkers = function(title){
-    $.each(locations,function(index, val){
-      if(val.title != title){
+  var clearMarkers = function(marker){
+    locations.forEach(function(val){
+      if(val.marker !=marker && marker !=null){
         val.marker.setMap(null);
-        //break;
+      }
+    });
+  }
+
+  var addAllMarkers = function(){
+    locations.forEach(function(val){
+      if(val.marker !=null){
+        val.marker.setMap(map);
       }
     });
   }
 
   self.currentWiki = ko.observable();
+  self.errorMsg = ko.observable('');
+  self.showErrorMsg = ko.observable(false);
   // Load current item after clicking
   self.loadWiki = function(item, event) {
     // Only handle the real click action, otherwise it will handle data with the loop.
     if (typeof(event) != "undefined") {
       //the first time to this loop, do nothing.
      if (event.button == 0){ //mouse click event
-      clearMarkers(item.title);
+      clearMarkers(item.marker);
       self.showAddList(false);
+      self.showWikiList(true);
       //$('.addressList').remove();
       $('.searchbox').after($('.search-results'));
       //self.showWikiList(true);
@@ -247,26 +224,50 @@ var viewModel = function(){
             brief: data[2][0],
             url: data[3][0]
           };
-          this.currentWiki = ko.observable(result);
-          console.log(this.currentWiki());
+          self.currentWiki(result);
         }
-        else{
-          //can't find any records from Wikipedia
-        $('#search-results').append('<span class="notfound">Sorry, can\'t find any records from Wikipedia with this keyword "'
-                                  + item.title +'"! </span>');
+        else{ //No records found in WikiPedia
+          self.showErrorMsg(true);
+          if(self.currentWiki()){
+            self.currentWiki('');
+          }
+          self.errorMsg('Sorry, can\'t find any records from Wikipedia with this keyword');
         }
       })
       .fail(function(msg){
-        $('#search-results').append('<span class="errorMsg">'+'Error: ' + msg +'</span>');
+        self.showErrorMsg(true);
+        self.errorMsg('Error: ' + msg);
       });
     }
   }
 }
 
-//get information from Foursquare
+self.clearWiki = function(){
+    self.showAddList(true);
+    self.showWikiList(false);
+    self.showErrorMsg(false);
+    addAllMarkers();
+}
+
+ //clear foursquare previous data before next window is opened.
+self.clearFourSquareData = function(){
+  if(self.filterVenues().length>0){ //清空之前的纪录
+        self.filterVenues.removeAll();
+    }
+}
+//get information from Foursquare, will show name/url
+//
+self.streetViewUrl = ko.observable('');
+self.infoMarkerTitle = ko.observable('')
 self.filterVenues = ko.observableArray();
-self.getDataFromFourSquare = function(){
-    self.filterVenues([]);
+self.getDataFromFourSquare = function(marker){
+    var streetView = "http://maps.googleapis.com/maps/api/streetview?location="
+                    +marker.position.lat()+','+ marker.position.lng()
+                    +'&size=400x300&heading=60&fov=90&pitch=10';
+    self.streetViewUrl(streetView);
+    self.infoMarkerTitle(marker.title);
+
+    //self.filterVenues([]);
     var currentDate = new Date().Format('yyyyMMdd'); //Get current date and formate it to yyyyMMdd
     var position = myInfowindow.marker.position;
     var loc = position.lat()+','+position.lng();
@@ -287,12 +288,16 @@ self.getDataFromFourSquare = function(){
           self.filterVenues.push(new Place(venues[i]));
         }
       }
+      myInfowindow.setContent($('#infowindow-foursqure').html()); //All data loaded, then set inforwindow content.
     })
     .fail(function(msg){
       var errorMsg = '<h3> Sorry, failed to get data from Foursquare right now, please check your network and try again.</h3>'
                       + '<br> Error Message:'+ msg;
-      myInfowindow.setContent(errorMsg);
+      self.infoMarkerTitle(errorMsg);
+      myInfowindow.setContent($('#infowindow-foursqure').html());
     });
+
+    myInfowindow.open(map, myInfowindow.marker);
   }
 //
 }
