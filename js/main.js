@@ -193,6 +193,7 @@ var viewModel = function(){
 
   self.currentWiki = ko.observable();
   self.errorMsg = ko.observable('');
+  self.showErrorMsg = ko.observable(false);
   // Load current item after clicking
   self.loadWiki = function(item, event) {
     // Only handle the real click action, otherwise it will handle data with the loop.
@@ -226,14 +227,15 @@ var viewModel = function(){
           self.currentWiki(result);
         }
         else{ //No records found in WikiPedia
+          self.showErrorMsg(true);
           if(self.currentWiki()){
             self.currentWiki('');
-            self.errorMsg = ko.observable('');
           }
           self.errorMsg('Sorry, can\'t find any records from Wikipedia with this keyword');
         }
       })
       .fail(function(msg){
+        self.showErrorMsg(true);
         self.errorMsg('Error: ' + msg);
       });
     }
@@ -243,9 +245,7 @@ var viewModel = function(){
 self.clearWiki = function(){
     self.showAddList(true);
     self.showWikiList(false);
-    if($('.notfound').html()){
-      $('.notfound').remove();
-    }
+    self.showErrorMsg(false);
     addAllMarkers();
 }
 

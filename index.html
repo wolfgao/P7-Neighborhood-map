@@ -22,11 +22,11 @@
         z-index: 1;
         top: 0;
         line-height: 30px;
-        padding: 10px;
+        padding: 5px;
         text-align: left;
         position: fixed;
         height: 100%;
-        width: 300px
+        width: 290px
         left: -315px;
         overflow-x: scroll;
         overflow-y:scroll;
@@ -39,9 +39,9 @@
       .open-btn {
        background-color: black;
        color: white;
-       border-radius: 3px;
+       border-radius: 1px;
        border-style: none;
-       margin-bottom: 10px;
+       margin-bottom: 5px;
      }
       h1 {
         color: #FFFFFF;
@@ -57,15 +57,15 @@
       }
       .search-results {
         color: #FFFFFF;
-        width: 300px;
+        width: 290px;
         position: fixed;
-        margin: 5px;
-        padding: 5px;
+        margin: 0px;
+        padding: 3px;
         overflow-x: scroll;
       }
       .infowindow a{color: #0000FF;}
       .infowindow {
-        width: 350px;
+        width: 320px;
       }
       #searchboxinput {
         color: #000000;
@@ -75,7 +75,7 @@
       .notfound{
         color: #FF1493;
         font-size: 14px;
-        width: 300px;
+        width: 290px;
       }
       a{color:#00BFFF;font-size: 14px;text-decoration:underline;}
       a:hover{color:#FF00FF;text-decoration:underline;}
@@ -114,7 +114,9 @@
           <p data-bind="text: brief"></p>
           <br>
         </div>
-        <div class="notfound"><span data-bind="text: errorMsg"></span></div>
+        <div class="notfound">
+          <span data-bind="text: errorMsg, visible: showErrorMsg"></span>
+        </div>
     </div>
     <div class="main">
     <button class="open-btn" data-bind="click: openBtn">&#9776;</button>
